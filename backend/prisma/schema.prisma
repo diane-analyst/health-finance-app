@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  birthDate DateTime
+  phone     String   @unique
+  
+  mydataConsentMedical  Boolean @default(false)
+  mydataConsentFinance  Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  healthRecords    HealthRecord[]
+  conversations    Conversation[]
+  subscriptions    Subscription[]
+  claims           Claim[]
+  consultations    Consultation[]
+}
+
+model HealthRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  recordType       String
+  bloodPressureSys Int?
+  bloodPressureDia Int?
+  bloodSugar       Int?
+  weight           Float?
+  
+  recordedAt DateTime @default(now())
+  rawData    String?
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  agentType    String
+  messageFrom  String
+  messageText  String
+  metadata     String?
+  
+  category String?
+  
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  monthlyAmount   Int
+  coverageAmount  Int
+  coverageRatio   Float
+  
+  status     String @default("active")
+  startedAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Claim {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  disease        String
+  claimedAmount  Int
+  approvedAmount Int?
+  
+  status     String @default("pending")
+  
+  claimedAt  DateTime @default(now())
+  paidAt     DateTime?
+}
+
+model Consultation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  symptom      String
+  diagnosis    String?
+  prescription String?
+  
+  consultationFee Int @default(30000)
+  
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  
+  prescriptionSent Boolean @default(false)
+}
